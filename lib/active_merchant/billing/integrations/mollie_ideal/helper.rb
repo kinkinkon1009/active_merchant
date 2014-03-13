@@ -56,7 +56,7 @@ module ActiveMerchant #:nodoc:
               :method => 'ideal',
               :issuer => @options[:redirect_param],
 
-              :webhookUrl => @options[:webhook_url],
+              :webhookUrl => @options[:notify_url],
               :redirectUrl => @options[:return_url],
               :metadata => { :order => order }
             )
