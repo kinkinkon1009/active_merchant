@@ -58,7 +58,7 @@ module ActiveMerchant #:nodoc:
 
               :webhookUrl => @options[:notify_url],
               :redirectUrl => @options[:return_url],
-              :metadata => { :order => order }
+              :metadata => { :order => @order }
             )
           end
         end
