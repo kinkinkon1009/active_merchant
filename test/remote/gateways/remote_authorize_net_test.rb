@@ -55,6 +55,15 @@ class AuthorizeNetTest < Test::Unit::TestCase
     assert_equal 'The credit card has expired', response.message
   end
 
+  def test_forced_test_mode_purchase
+    gateway = AuthorizeNetGateway.new(fixtures(:authorize_net).update(:test => true))
+    assert response = gateway.purchase(@amount, @credit_card, @options)
+    assert_success response
+    assert response.test?
+    assert_match(/TESTMODE/, response.message)
+    assert response.authorization
+  end
+
   def test_successful_authorization
     assert response = @gateway.authorize(@amount, @credit_card, @options)
     assert_success response
@@ -100,7 +109,6 @@ class AuthorizeNetTest < Test::Unit::TestCase
                   "authorization_code",
                   "avs_result_code",
                   "card_code",
-                  "cardholder_authentication_code",
                   "response_code",
                   "response_reason_code",
                   "response_reason_text",
@@ -124,7 +132,6 @@ class AuthorizeNetTest < Test::Unit::TestCase
                   "authorization_code",
                   "avs_result_code",
                   "card_code",
-                  "cardholder_authentication_code",
                   "response_code",
                   "response_reason_code",
                   "response_reason_text",

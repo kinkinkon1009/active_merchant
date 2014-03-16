@@ -1,4 +1,3 @@
-# encoding: UTF-8
 require 'test_helper'
 
 class RemoteWirecardTest < Test::Unit::TestCase
@@ -83,12 +82,6 @@ class RemoteWirecardTest < Test::Unit::TestCase
 
   def test_successful_purchase
     assert response = @gateway.purchase(@amount, @credit_card, @options)
-    assert_success response
-    assert_match /THIS IS A DEMO/, response.message
-  end
-
-  def test_utf8_description_does_not_blow_up
-    assert response = @gateway.purchase(@amount, @credit_card, @options.merge(description: "Habitación"))
     assert_success response
     assert_match /THIS IS A DEMO/, response.message
   end

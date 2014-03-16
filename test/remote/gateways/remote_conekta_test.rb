@@ -55,13 +55,13 @@ class RemoteConektaTest < Test::Unit::TestCase
     assert_success response
     assert_equal nil, response.message
 
-    assert response = @gateway.refund(@amount, response.authorization, @options)
+    assert response = @gateway.refund(response.authorization, @amount, @options)
     assert_success response
     assert_equal nil, response.message
   end
 
   def test_unsuccessful_refund
-    assert response = @gateway.refund(@amount, "1", @options)
+    assert response = @gateway.refund("1", @amount, @options)
     assert_failure response
     assert_equal "The charge does not exist or it is not suitable for this operation", response.message
   end
@@ -83,7 +83,7 @@ class RemoteConektaTest < Test::Unit::TestCase
     assert_success response
     assert_equal nil, response.message
 
-    assert response = @gateway.capture(@amount, response.authorization, @options)
+    assert response = @gateway.capture(response.authorization, @amount, @options)
     assert_success response
     assert_equal nil, response.message
   end
@@ -104,13 +104,14 @@ class RemoteConektaTest < Test::Unit::TestCase
   end
 
   def test_unsuccessful_capture
-    assert response = @gateway.capture(@amount, "1", @options)
+    @options[:order_id] = "1"
+    assert response = @gateway.capture(@amount, @options)
     assert_failure response
     assert_equal "The charge does not exist or it is not suitable for this operation", response.message
   end
 
-  def test_invalid_key
-    gateway = ConektaGateway.new(key: 'invalid_token')
+  def test_invalid_login
+    gateway = ConektaGateway.new(login: 'invalid_token')
     assert response = gateway.purchase(@amount, @credit_card, @options)
     assert_failure response
     assert_equal "Unrecognized authentication key", response.message

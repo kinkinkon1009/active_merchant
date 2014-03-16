@@ -98,7 +98,7 @@ cyber_source:
   password: Y
 
 conekta:
-  key: 1tv5yJp3xnVZ7eK67m4h
+  login: 1tv5yJp3xnVZ7eK67m4h
 
 data_cash:
   login: X
@@ -166,11 +166,6 @@ firstdata_e4:
   login:
   password:
 
-first_giving:
-  application_key: ''
-  security_token:  ''
-  charity_id: "1234"
-
 garanti:
   login: "PROVAUT"
   terminal_id: 111995
@@ -219,11 +214,6 @@ litle:
   login: ACTIVE
   password: MERCHANT
   merchant_id: 101
-
-# Working test credentials, no need to replace
-maxipago:
-  login: "100"
-  password: "21g8u6gh6szw1gywfs165vui"
 
 # Working test credentials, no need to replace
 merchant_esolutions:
@@ -693,12 +683,6 @@ vindicia:
 
 webpay:
   login: "test_secret_eHn4TTgsGguBcW764a2KA8Yd"
-
-# Working test credentials, no need to replace
-wepay:
-  client_id: "187493"
-  account_id: "1311201206"
-  access_token: "STAGE_4c6a319f9b6ef50e596ee3ea0b845f2fecd50fa0d8bc0b7483bd61c2018dbf5c"
 
 # Working test credentials, no need to replace
 wirecard:
