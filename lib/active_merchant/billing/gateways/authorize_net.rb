@@ -43,7 +43,7 @@ module ActiveMerchant #:nodoc:
 
       self.default_currency = 'USD'
 
-      self.supported_countries = %w(AD AT AU BE BG CA CH CY CZ DE DK ES FI FR GB GB GI GR HU IE IT LI LU MC MT NL NO PL PT RO SE SI SK SM TR US VA)
+      self.supported_countries = ['US', 'CA', 'GB']
       self.supported_cardtypes = [:visa, :master, :american_express, :discover, :diners_club, :jcb]
       self.homepage_url = 'http://www.authorize.net/'
       self.display_name = 'Authorize.Net'
@@ -267,6 +267,9 @@ module ActiveMerchant #:nodoc:
       def commit(action, money, parameters)
         parameters[:amount] = amount(money) unless action == 'VOID'
 
+        # Only activate the test_request when the :test option is passed in
+        parameters[:test_request] = @options[:test] ? 'TRUE' : 'FALSE'
+
         url = test? ? self.test_url : self.live_url
         data = ssl_post url, post_data(action, parameters)
 
@@ -275,8 +278,15 @@ module ActiveMerchant #:nodoc:
 
         message = message_from(response)
 
+        # Return the response. The authorization can be taken out of the transaction_id
+        # Test Mode on/off is something we have to parse from the response text.
+        # It usually looks something like this
+        #
+        #   (TESTMODE) Successful Sale
+        test_mode = test? || message =~ /TESTMODE/
+
         Response.new(success?(response), message, response,
-          :test => test?,
+          :test => test_mode,
           :authorization => response[:transaction_id],
           :fraud_review => fraud_review?(response),
           :avs_result => { :code => response[:avs_result_code] },

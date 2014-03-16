@@ -98,13 +98,9 @@ module ActiveMerchant #:nodoc:
 
       def add_creditcard(post, creditcard)
         post['PAN'] = creditcard.number
-        post['Caducidad'] = expdate(creditcard)
+        post['Caducidad'] = "#{creditcard.year}#{creditcard.month}"
         post['CVV2'] = creditcard.verification_value
         post['Pago_elegido'] = CECA_MODE
-      end
-
-      def expdate(creditcard)
-        "#{format(creditcard.year, :four_digits)}#{format(creditcard.month, :two_digits)}"
       end
 
       def parse(body)

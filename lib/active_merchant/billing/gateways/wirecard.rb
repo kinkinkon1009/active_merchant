@@ -71,10 +71,6 @@ module ActiveMerchant #:nodoc:
 
 
       private
-      def clean_description(description)
-        description.to_s.slice(0,32).encode("US-ASCII", invalid: :replace, undef: :replace, replace: '?')
-      end
-
       def prepare_options_hash(options)
         result = @options.merge(options)
         setup_address_hash!(result)
@@ -143,7 +139,7 @@ module ActiveMerchant #:nodoc:
         options[:order_id] ||= generate_unique_id
 
         xml.tag! "FNC_CC_#{options[:action].to_s.upcase}" do
-          xml.tag! 'FunctionID', clean_description(options[:description])
+          xml.tag! 'FunctionID', options[:description].to_s.slice(0,32)
           xml.tag! 'CC_TRANSACTION' do
             xml.tag! 'TransactionID', options[:order_id]
             case options[:action]

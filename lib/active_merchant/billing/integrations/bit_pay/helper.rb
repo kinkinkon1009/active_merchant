@@ -38,8 +38,6 @@ module ActiveMerchant #:nodoc:
           def form_fields
             invoice = create_invoice
 
-            raise StandardError, "Invalid response while retrieving BitPay Invoice ID. Please try again." unless invoice
-
             {"id" => invoice['id']}
           end
 

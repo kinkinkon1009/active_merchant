@@ -3,8 +3,6 @@ require 'action_pack'
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     module Integrations #:nodoc:
-      ActionViewHelperError = Class.new(StandardError)
-
       module ActionViewHelper
         # This helper allows the usage of different payment integrations
         # through a single form helper.  Payment integrations are the
@@ -69,8 +67,6 @@ module ActiveMerchant #:nodoc:
           
           concat(result.respond_to?(:html_safe) ? result.html_safe : result)
           nil
-        rescue => e
-          raise ActionViewHelperError.new(e)
         end
       end
     end
