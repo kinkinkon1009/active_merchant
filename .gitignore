@@ -8,4 +8,4 @@ Gemfile*.lock
 .rbx/
 *.gem
 
-#.idea/
+.idea/
