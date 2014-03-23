@@ -41,117 +41,94 @@ module ActiveMerchant #:nodoc:
           "registercard" => "RegisterCardResult"
       }
 
-
-      # The countries the gateway supports merchants from as 2 digit ISO country codes
-      self.supported_countries = ['US']
-
-      # The card types supported by the payment gateway
-      self.supported_cardtypes = [:visa, :master, :american_express, :discover]
-
-      # The homepage URL of the gateway
-      self.homepage_url = 'http://www.example.net/'
-
-      # The name of the gateway
-      self.display_name = 'New Gateway'
-
       def initialize(options = {})
         requires!(options, :memberId, :memberGuid)
         super
       end
 
-      def authorize(money, recurringcard, options = {})
-        post = {}
-        add_recurringcard(post, recurringcard, money)
-        commit('authorize', post, 'recurring')
-      end
-
+      # カード登録
+      #@param creditcard: ActiveMerchant::Billing::CreditCard
+      #@params options: 特に利用していない
       def registercard(creditcard, options = {})
         post = {}
         add_registercard(post, creditcard)
         commit('registercard', post, 'recurring')
-        end
+      end
 
-
+      # 与信取得
+      #@param recurringcard: ハッシュ必須項目 cardId, cardGuid
+      #@param purchase: ハッシュ必須項目 countryId, currencyId, trackingMemberCode, merchantAccountType, dynamicDescriptor, avsAddress, avsZip
+      #@param options
+      def authorize(money, recurringcard, purchase, options = {})
+        post = {}
+        add_recurringcard(post, recurringcard)
+        add_purchase(post, money, purchase)
+        commit('authorize', post, 'recurring')
+      end
 
       def capture(money, authorization, options = {})
       post = {}
-      add_authorization(post,authorization, money)
+      add_authorization(post, money, authorization)
       commit('capture', post, 'basic')
       end
 
       def void(authorization, options = {})
         post = {}
-        add_authorization(post, authorization, nil);
-        puts "########### void ################"
-        puts post.inspect
+        add_authorization(post, nil, authorization);
         commit('void', post, 'basic')
       end
 
-      # TODO kanechika 20140314 作成中
-      #def purchase(money, creditcard, options = {})
-      #  post = {}
-      #  add_invoice(post, options)
-      #  add_creditcard(post, creditcard)
-      #  add_address(post, creditcard, options)
-      #  add_customer_data(post, options)
-      #
-      #  commit('sale', post, 'basic')
-      #end
-
       private
 
-      def add_customer_data(post, options)
-      end
-
-      def add_address(post, creditcard, options)
-      end
-
-      def add_invoice(post, options)
-      end
-
+      # カード情報をpostデータに登録
+      #@param [post]
+      #@param creditcard: ActiveMerchant::Billing::CreditCard
       def add_registercard(post, creditcard)
-        post[:number]     = creditcard.number
+        post[:number]      = creditcard.number
         post[:holder]      = creditcard.name
-        post[:expiryMonth]      = creditcard.month
-        post[:expiryYear]        = creditcard.year
-        post[:cardType]       = creditcard.brand
+        post[:expiryMonth] = creditcard.month
+        post[:expiryYear]  = creditcard.year
+        post[:cardType]    = creditcard.brand
       end
 
-      def add_authorization(post, authorization, money)
-        # TODO Ayumu 2014.3.15 テストのため
-        post[:transactionId] = '19102893'
-        post[:transactionGuid] = '28ad07f4-037a-4802-a2ca-1fb6405ac407'
-        post[:currencyId] = '840'
-        post[:trackingMemberCode] = 'test8'
-        post[:amount] = money
-      end
-
-      def add_recurringcard(post,recurringcard,money)
-        post[:cardId] = recurringcard[:cardId]
+      # 登録カード情報をpostデータに登録
+      def add_recurringcard(post,recurringcard)
+        post[:cardId]   = recurringcard[:cardId]
         post[:cardGuid] = recurringcard[:cardGuid]
-        post[:amount] = money
-        # TODO Ayumu テストデータの
-        post[:countryId] = 840
-        post[:currencyId] = 840
-        post[:trackingMemberCode] = 'test7'
-        post[:merchantAccountType] = 1 # 1 => ? , 2 => ?, 4 => ?
-        post[:dynamicDescriptor] = 'test'
-        post[:avsAddress] = 'test'
-        post[:avsZip] = 'test'
       end
 
-      def add_creditcard(post, creditcard)
-        post[:media]     = "cc"
-        post[:name]      = creditcard.name
-        post[:cc]        = creditcard.number
-        post[:exp]       = expdate(creditcard)
-        post[:cvv]       = creditcard.verification_value if creditcard.verification_value?
+      # 与信取得のデータをpostデータに登録
+      #@param [post]
+      #@param money
+      #@param purchase ハッシュ必須項目 countryId, currencyId, trackingMemberCode, merchantAccountType, dynamicDescriptor, avsAddress, avsZip
+      #@return post
+      def add_purchase(post, money, purchase)
+        post[:amount]              = money
+        post[:countryId]           = purchase[:countryId]
+        post[:currencyId]          = purchase[:currencyId]
+        post[:trackingMemberCode]  = purchase[:trackingMemberCode] # 1:EC 2:MOTO 4:RECURRING
+        post[:merchantAccountType] = purchase[:merchantAccountType]
+        post[:dynamicDescriptor]   = purchase[:dynamicDescriptor]
+        post[:avsAddress]          = purchase[:avsAddress]
+        post[:avsZip]              = purchase[:avsZip]
       end
 
-      # TODO Ayumu 2014.3.14 作成が必要
+      # 取得している与信のデータをpostデータに登録
+      #@param [post]
+      #@param money
+      #@param authorization ハッシュ必須項目 transactionId, transactionGuid, currencyId, trackingMemberCode
+      #@return post
+      def add_authorization(post, money, authorization = {})
+        post[:transactionId]      = authorization[:transactionId]
+        post[:transactionGuid]    = authorization[:transactionGuid]
+        post[:currencyId]         = authorization[:currencyId]
+        post[:trackingMemberCode] = authorization[:trackingMemberCode]
+        post[:amount]             = money
+      end
+
       def parse(data,action,action_type)
         # 取得データ
-        puts "############# data ################"
+        puts "[ data ]-------------------------"
         puts data.inspect
 
         result = {}
@@ -161,29 +138,21 @@ module ActiveMerchant #:nodoc:
         result_type = get_result_type(action)
         root = xml.xpath("//#{result_type}")
 
-        # TODO Ayumu 検索方法を検討中
-        #root.xpath(".//*").each do |node|
         root.children.each do |node|
           parse_element(result, node) if node.element?
-
-          # Nodeごとのデータ
-          #puts "###### node ######"
-          #puts node
         end
         return result
       end
 
       def commit(action, post, action_type)
-        # TODO Ayumu 2014.3.15 なぜ@optionsなのか
         post[:memberId] = @options[:memberId]
         post[:memberGuid] = @options[:memberGuid]
         post[:action] = action
 
         # payvisionにpostする
-
         # INPUT データ
-        puts nil
-        puts "########## post ############"
+        puts " --- start -----"
+        puts "[ post ] ---------------------------"
         puts post.inspect
 
         response = parse( ssl_post( action_url(action, action_type), post_data(post)), action, action_type )
@@ -204,7 +173,7 @@ module ActiveMerchant #:nodoc:
         host_url = test? ? self.test_url : self.live_url
         prefix_url = eval("URL_PREFIX_#{cap_action_type}")
 
-        puts "########## url ################"
+        puts "[ url ] ---------------------------"
         puts host_url + prefix_url + eval(cap_action_type)[action]
         return host_url + prefix_url + eval(cap_action_type)[action]
       end
@@ -235,19 +204,6 @@ module ActiveMerchant #:nodoc:
 
       def message_from(response)
         response[:message]
-      end
-
-      # TODO Ayumu 必要か否か検討が必要
-      def clean_and_stringify_params(post)
-        # TCLink wants us to send a hash with string keys, and activemerchant pushes everything around with
-        # symbol keys. Before sending our input to TCLink, we convert all our keys to strings and dump the symbol keys.
-        # We also remove any pairs with nil values, as these confuse TCLink.
-        post.keys.reverse.each do |key|
-          if post[key]
-            post[key.to_s] = post[key]
-          end
-          post.delete(key)
-        end
       end
 
       def post_data(parameters)

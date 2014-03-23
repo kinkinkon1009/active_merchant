@@ -15,19 +15,26 @@ class PayvisionTest < Test::Unit::TestCase
         year: 2016
     )
 
-    # TODO Ayumue RecurringCardを作成予定
     @recurring_card ={
         cardId: '4974183',
         cardGuid: '6cb3dd55-c56a-4bf2-98d0-6c5165bea51b'
     }
 
-
-    # TODO Ayumue RecurringCardを作成予定
     @authorization = {
-        transactionId: '18937823',
-        transactionGuid: 'c3f17db4-4152-4350-9de1-9c5989b5a381',
+        transactionId: '19178705',
+        transactionGuid: '2e001cf3-07a2-466b-90a8-ceceb5e69c24',
         currencyId: '840',
-        trackingMemberCode: 'test5'
+        trackingMemberCode: Time.now
+    }
+
+    @purchase = {
+        countryId: '840',
+        currencyId: '840',
+        trackingMemberCode: Time.now,
+        merchantAccountType: '4',
+        dynamicDescriptor: 'Baboo|+85281760914',
+        avsAddress: '',
+        avsZip: ''
     }
 
     @amount = 600
@@ -46,25 +53,17 @@ class PayvisionTest < Test::Unit::TestCase
     assert response = @gateway.registercard(@credit_card, @options)
     assert_instance_of Response, response
     assert_success response
-    # TODO Ayumu 2014.3.15 logの出力方式を考える必要あり
-    #puts nil
-    #puts "########### test_successful_regsitercard response ###############"
-    #puts response.inspect
 
-    # Replace with authorization number from the successful response
-    #assert_equal '', response.authorization
     assert response.test?
   end
 
   def test_successful_authorize
     @gateway.expects(:ssl_post).returns(successful_authorize_response)
 
-    assert response = @gateway.authorize(@amount, @recurring_card, @options)
+    assert response = @gateway.authorize(@amount, @recurring_card, @purchase, @options)
     assert_instance_of Response, response
     assert_success response
 
-    # Replace with authorization number from the successful response
-    #assert_equal '', response.authorization
     assert response.test?
   end
 
@@ -75,8 +74,6 @@ class PayvisionTest < Test::Unit::TestCase
     assert_instance_of Response, response
     assert_success response
 
-    # Replace with authorization number from the successful response
-    #assert_equal '', response.authorization
     assert response.test?
   end
 
@@ -87,31 +84,8 @@ class PayvisionTest < Test::Unit::TestCase
     assert_instance_of Response, response
     assert_success response
 
-    # Replace with authorization number from the successful response
-    #assert_equal '', response.authorization
     assert response.test?
   end
-
-  # TODO Ayumu 備忘めもの為に残している
-  #def test_successful_purchase
-  #  @gateway.expects(:ssl_post).returns(successful_purchase_response)
-  #
-  #  assert response = @gateway.purchase(@amount, @credit_card, @options)
-  #  assert_instance_of Response, response
-  #  assert_success response
-  #
-  #  # Replace with authorization number from the successful response
-  #  assert_equal '', response.authorization
-  #  assert response.test?
-  #end
-
-  #def test_unsuccessful_request
-  #  @gateway.expects(:ssl_post).returns(failed_purchase_response)
-  #
-  #  assert response = @gateway.purchase(@amount, @credit_card, @options)
-  #  assert_failure response
-  #  assert response.test?
-  #end
 
   private
 
