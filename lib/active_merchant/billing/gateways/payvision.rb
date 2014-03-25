@@ -9,7 +9,7 @@ module ActiveMerchant #:nodoc:
     class PayvisionGateway < Gateway
       self.test_url  = 'https://testprocessor.payvisionservices.com/Gateway/'
       # TODO Ayumu 2014.3.15 まだ未定
-      self.live_url = ''
+      self.live_url = 'https://testprocessor.payvisionservices.com/Gateway/'
 
       SUCCESS_TYPES = ["0"]
 
@@ -155,14 +155,27 @@ module ActiveMerchant #:nodoc:
         puts "[ post ] ---------------------------"
         puts post.inspect
 
-        response = parse( ssl_post( action_url(action, action_type), post_data(post)), action, action_type )
+        success = false
+        message = nil
+        begin
+          raw_response = ssl_post( action_url(action, action_type), post_data(post))
+          response = parse( raw_response, action, action_type )
+
+          success = SUCCESS_TYPES.include?(response[:result])
+          message = message_from(response)
+        rescue SocketError => e
+          # インターネットに接続されていない場合：
+          puts "------ request error -------------"
+          response = { message: e.message }
+          puts e.message
+        rescue ResponseError => e
+          puts "------ request error -------------"
+          puts e.inspect
+        end
 
         # RESPONSE データ
         #puts "########## response ###########"
         #puts response.inspect
-
-        success = SUCCESS_TYPES.include?(response[:result])
-        message = message_from(response)
         Response.new(success, message, response,
                      :test => test?
         )

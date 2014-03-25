@@ -2,12 +2,12 @@ require 'test_helper'
 
 class PayvisionTest < Test::Unit::TestCase
   def setup
-    @gateway = PayvisionGateway.new(
-                 :memberId => '1002359',
-                 :memberGuid => '399FE286-00D2-485C-9925-7B7D48A35D32'
-               )
+    options = {:memberId => '1002359',:memberGuid => '399FE286-00D2-485C-9925-7B7D48A35D32'}
+
+    @gateway = PayvisionGateway.new(options)
 
     @credit_card = CreditCard.new(
+        # テスト用（成功）
         number: '4907639999990022',
         first_name: 'Test',
         last_name: 'Taro',
@@ -51,6 +51,8 @@ class PayvisionTest < Test::Unit::TestCase
     @gateway.expects(:ssl_post).returns(successful_registercard_response)
 
     assert response = @gateway.registercard(@credit_card, @options)
+    puts "register_card --------------------"
+    puts response.inspect
     assert_instance_of Response, response
     assert_success response
 
@@ -59,8 +61,9 @@ class PayvisionTest < Test::Unit::TestCase
 
   def test_successful_authorize
     @gateway.expects(:ssl_post).returns(successful_authorize_response)
-
     assert response = @gateway.authorize(@amount, @recurring_card, @purchase, @options)
+    puts "authorize --------------------"
+    puts response.inspect
     assert_instance_of Response, response
     assert_success response
 
