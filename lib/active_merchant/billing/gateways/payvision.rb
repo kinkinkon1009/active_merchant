@@ -23,14 +23,16 @@ module ActiveMerchant #:nodoc:
 
       BASIC_ACTIONS = {
           "capture" => "Capture",
-          "void" => "Void"
+          "void" => "Void",
+          "refund" => "Refund",
       }
 
       RECURRING_ACTIONS = {
           "registercard" => "RegisterCard",
           "authorize" => "Authorize",
-          "credit" => "Credit",
-          "fundtransfer" => "CardFundTransfer"
+          "payment" => "Payment",
+          "credit" => "Credit", # 未実装
+          "fundtransfer" => "CardFundTransfer" # 未実装
       }
 
       # TODO AYUMU 他のにも登録していく必要がある
@@ -38,6 +40,10 @@ module ActiveMerchant #:nodoc:
           "authorize" => "TransactionResult",
           "capture" => "TransactionResult",
           "void" => "TransactionResult",
+          "refund" => "TransactionResult",
+          "credit" => "TransactionResult",
+          "fundtransfer" => "TransactionResult",
+          "payment" => "TransactionResult",
           "registercard" => "RegisterCardResult"
       }
 
@@ -46,11 +52,14 @@ module ActiveMerchant #:nodoc:
         super
       end
 
+      # ------------------------------------------------
+      #                                  Recuring Action
+      #                                  ---------------
       # カード登録
       #@param creditcard: ActiveMerchant::Billing::CreditCard
       #@params options: 特に利用していない
       def registercard(creditcard, options = {})
-        post = {}
+      post = {}
         add_registercard(post, creditcard)
         commit('registercard', post, 'recurring')
       end
@@ -60,23 +69,60 @@ module ActiveMerchant #:nodoc:
       #@param purchase: ハッシュ必須項目 countryId, currencyId, trackingMemberCode, merchantAccountType, dynamicDescriptor, avsAddress, avsZip
       #@param options
       def authorize(money, recurringcard, purchase, options = {})
-        post = {}
+      post = {}
         add_recurringcard(post, recurringcard)
         add_purchase(post, money, purchase)
         commit('authorize', post, 'recurring')
       end
 
-      def capture(money, authorization, options = {})
+      # 一括決済(authorize + capture と同様)
+      def payment(money,recurringcard,purchase, options = {})
       post = {}
+        add_recurringcard(post, recurringcard)
+        add_purchase(post, money, purchase)
+        commit('payment', post, 'recurring')
+      end
+
+      # 返金
+      def credit(money,recurringcard,purchase, options = {})
+      post = {}
+        add_recurringcard(post, recurringcard)
+        add_purchase(post, money, purchase)
+        commit('credit', post, 'recurring')
+      end
+
+      # 送金
+      def fundtransfer(money,recurringcard,purchase, options = {})
+      post = {}
+        add_recurringcard(post, recurringcard)
+        add_purchase(post, money, purchase)
+        commit('fundtransfer', post, 'recurring')
+      end
+
+      # ------------------------------------------------
+      #                                     Basic Action
+      #                                     ------------
+      # 決済確定
+      def capture(money, authorization, options = {})
+        post = {}
       add_authorization(post, money, authorization)
       commit('capture', post, 'basic')
       end
 
+      # 与信キャンセル
       def void(authorization, options = {})
         post = {}
         add_authorization(post, nil, authorization);
         commit('void', post, 'basic')
       end
+
+      # 返金(capture、paymentと紐づく必要あり)
+      def refund(money,authorization, options = {})
+        post = {}
+        add_authorization(post, money, authorization);
+        commit('refund', post, 'basic')
+      end
+
 
       private
 
@@ -160,16 +206,16 @@ module ActiveMerchant #:nodoc:
         begin
           raw_response = ssl_post( action_url(action, action_type), post_data(post))
           response = parse( raw_response, action, action_type )
-
           success = SUCCESS_TYPES.include?(response[:result])
           message = message_from(response)
         rescue SocketError => e
           # インターネットに接続されていない場合：
-          puts "------ request error -------------"
+          puts "------ socket error -------------"
           response = { message: e.message }
           puts e.message
         rescue ResponseError => e
-          puts "------ request error -------------"
+          # パラメータが足りない場合も発生し得る：
+          puts "------ response error -------------"
           puts e.inspect
         end
 

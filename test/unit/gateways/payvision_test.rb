@@ -1,6 +1,10 @@
 require 'test_helper'
 
 class PayvisionTest < Test::Unit::TestCase
+
+  # ------------------------------------------------
+  #                                       Definition
+  #                                       ----------
   def setup
     options = {:memberId => '1002359',:memberGuid => '399FE286-00D2-485C-9925-7B7D48A35D32'}
 
@@ -21,8 +25,8 @@ class PayvisionTest < Test::Unit::TestCase
     }
 
     @authorization = {
-        transactionId: '19178705',
-        transactionGuid: '2e001cf3-07a2-466b-90a8-ceceb5e69c24',
+        transactionId: '19223127',
+        transactionGuid: '93c837f6-ce73-45c2-b8eb-268f6eb412b6',
         currencyId: '840',
         trackingMemberCode: Time.now
     }
@@ -47,6 +51,9 @@ class PayvisionTest < Test::Unit::TestCase
   end
 
 
+  # ------------------------------------------------
+  #                                             Test
+  #                                             ----
   def test_successful_regsitercard
     @gateway.expects(:ssl_post).returns(successful_registercard_response)
 
@@ -90,8 +97,64 @@ class PayvisionTest < Test::Unit::TestCase
     assert response.test?
   end
 
+  def test_successful_payment
+    @gateway.expects(:ssl_post).returns(successful_payment_response)
+
+    assert response = @gateway.payment(@amount, @recurring_card, @purchase, @options)
+    assert_instance_of Response, response
+    assert_success response
+
+    # レスポンスを確認
+    #puts response.inspect
+
+    assert response.test?
+  end
+
+  def test_successful_credit
+    @gateway.expects(:ssl_post).returns(successful_credit_response)
+
+    assert response = @gateway.credit(@amount, @recurring_card, @purchase, @options)
+    assert_instance_of Response, response
+    assert_success response
+
+    # レスポンスを確認
+    puts response.inspect
+
+    assert response.test?
+  end
+
+  # TODO アカウントの制限で実行できない
+  #def test_successful_fundtransfer
+  #  #@gateway.expects(:ssl_post).returns(successful_fundtransfer_response)
+  #
+  #  assert response = @gateway.fundtransfer(@amount, @recurring_card, @purchase, @options)
+  #  assert_instance_of Response, response
+  #  assert_success response
+  #
+  #  # レスポンスを確認
+  #  #puts response.inspect
+  #
+  #  assert response.test?
+  #end
+
+  def test_successful_refund
+    @gateway.expects(:ssl_post).returns(successful_refund_response)
+
+    assert response = @gateway.refund(@amount, @authorization, @options)
+    assert_instance_of Response, response
+    assert_success response
+
+    # レスポンスを確認
+    #puts response.inspect
+
+    assert response.test?
+  end
+
   private
 
+  # ------------------------------------------------
+  #                                             Mock
+  #                                             ----
   def successful_registercard_response
     <<-RESPONSE
       <?xml version="1.0" encoding="utf-8"?>
@@ -248,8 +311,188 @@ class PayvisionTest < Test::Unit::TestCase
     RESPONSE
   end
 
-  # Place raw failed response from gateway here
-  def failed_purchase_response
+  def successful_payment_response
+    <<-RESPONSE
+      <?xml version=\"1.0\" encoding=\"utf-8\"?>
+      <TransactionResult xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://payvision.com/gateway/\">
+        <Result>0</Result>
+        <Message>The operation was successfully processed.</Message>
+        <TrackingMemberCode>2014-03-30 15:14:00 +0900</TrackingMemberCode>
+        <TransactionId>19223127</TransactionId>
+        <TransactionGuid>93c837f6-ce73-45c2-b8eb-268f6eb412b6</TransactionGuid>
+        <TransactionDateTime>2014-03-30T06:14:00.0636451Z</TransactionDateTime>
+        <Cdc>
+          <CdcEntry>
+            <Name>BankInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>BankCode</Key>
+                <Value>00</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>BankMessage</Key>
+                <Value>Approved</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>BankApprovalCode</Key>
+                <Value>334102</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>Warning</Key>
+                <Value>avsAddress and/or avsZip empty</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+          <CdcEntry>
+            <Name>CardInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>CardId</Key>
+                <Value>4974183</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>CardGuid</Key>
+                <Value>6cb3dd55-c56a-4bf2-98d0-6c5165bea51b</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+        </Cdc>
+      </TransactionResult>
+    RESPONSE
+  end
+
+  def successful_refund_response
+    <<-RESPONSE
+      <?xml version=\"1.0\" encoding=\"utf-8\"?>
+      <TransactionResult xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://payvision.com/gateway/\">
+        <Result>0</Result>
+        <Message>The operation was successfully processed.</Message>
+        <TrackingMemberCode>2014-03-30 15:I18n.t(''):45 +0900</TrackingMemberCode>
+        <TransactionId>19223135</TransactionId>
+        <TransactionGuid>3b6339a7-16f1-4931-8c05-5962d8fc3765</TransactionGuid>
+        <TransactionDateTime>2014-03-30T06:I18n.t(''):44.3905753Z</TransactionDateTime>
+        <Cdc>
+          <CdcEntry>
+            <Name>BankInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>BankCode</Key>
+                <Value>00</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>BankMessage</Key>
+                <Value>Approved</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>BankApprovalCode</Key>
+                <Value>092647</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+          <CdcEntry>
+            <Name>CardInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>CardId</Key>
+                <Value>4974183</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>CardGuid</Key>
+                <Value>6cb3dd55-c56a-4bf2-98d0-6c5165bea51b</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+        </Cdc>
+      </TransactionResult>
+    RESPONSE
+  end
+
+  def successful_credit_response
+    <<-RESPONSE
+      <?xml version=\"1.0\" encoding=\"utf-8\"?>
+      <TransactionResult xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://payvision.com/gateway/\">
+        <Result>0</Result>
+        <Message>The operation was successfully processed.</Message>
+        <TrackingMemberCode>2014-03-30 15:39:10 +0900</TrackingMemberCode>
+        <TransactionId>19223151</TransactionId>
+        <TransactionGuid>08c267bf-bd85-4638-818f-cacf0e3446dd</TransactionGuid>
+        <TransactionDateTime>2014-03-30T06:39:10.1575126Z</TransactionDateTime>
+        <Cdc>
+          <CdcEntry>
+            <Name>BankInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>BankCode</Key>
+                <Value>00</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>BankMessage</Key>
+                <Value>Approved</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>BankApprovalCode</Key>
+                <Value>666507</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+          <CdcEntry>
+            <Name>CardInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>CardId</Key>
+                <Value>4974183</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>CardGuid</Key>
+                <Value>6cb3dd55-c56a-4bf2-98d0-6c5165bea51b</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+        </Cdc>
+      </TransactionResult>
+    RESPONSE
+  end
+
+  # Template
+  ## Place raw failed response from gateway here
+  #def successful_payment_response
+  #  <<-RESPONSE
+  #  RESPONSE
+  #end
+  #
+  ## Place raw failed response from gateway here
+  #def failed_purchase_response
+  #  <<-RESPONSE
+  #  RESPONSE
+  #end
+
+  def failed_fundtransfer_response
+    <<-RESPONSE
+      <?xml version=\"1.0\" encoding=\"utf-8\"?>
+      <TransactionResult xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://payvision.com/gateway/\">
+        <Result>1000</Result>
+        <Message>Invalid arguments. One or more arguments have invalid values. Please review the parameters sent</Message>
+        <TrackingMemberCode>2014-03-30 15:43:21 +0900</TrackingMemberCode>
+        <TransactionId>0</TransactionId>
+        <TransactionGuid>00000000-0000-0000-0000-000000000000</TransactionGuid>
+        <TransactionDateTime>2014-03-30T06:43:20.4479111Z</TransactionDateTime>
+        <Cdc>
+          <CdcEntry>
+            <Name>ErrorInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>ErrorCode</Key>
+                <Value>1000092</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>ErrorMessage</Key>
+                <Value>The merchant account does not allow Card Fund Transfer operations.</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+        </Cdc>
+      </TransactionResult>
+    RESPONSE
   end
 
   def failed_void_response
@@ -280,4 +523,34 @@ class PayvisionTest < Test::Unit::TestCase
         </T\ansactionResult>
     RESPONSE
   end
+
+  def failed_refund_response
+    <<-RESPONSE
+      <?xml version=\"1.0\" encoding=\"utf-8\"?>
+      <TransactionResult xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://payvision.com/gateway/\">
+        <Result>1000</Result>
+        <Message>Invalid arguments. One or more arguments have invalid values. Please review the parameters sent</Message>
+        <TrackingMemberCode>2014-03-30 15:14:02 +0900</TrackingMemberCode>
+        <TransactionId>0</TransactionId>
+        <TransactionGuid>00000000-0000-0000-0000-000000000000</TransactionGuid>
+        <TransactionDateTime>2014-03-30T06:14:02.0472219Z</TransactionDateTime>
+        <Cdc>
+          <CdcEntry>
+            <Name>ErrorInformation</Name>
+            <Items>
+              <CdcEntryItem>
+                <Key>ErrorCode</Key>
+                <Value>1000021</Value>
+              </CdcEntryItem>
+              <CdcEntryItem>
+                <Key>ErrorMessage</Key>
+                <Value>The required operation is not allowed. Please review the parameters and try to send it again.</Value>
+              </CdcEntryItem>
+            </Items>
+          </CdcEntry>
+        </Cdc>
+      </TransactionResult>
+    RESPONSE
+  end
+
 end
