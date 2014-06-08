@@ -21,7 +21,7 @@ module ActiveMerchant #:nodoc:
       def purchase(money, credit_card_or_referenced_id, options = {})
         requires!(options, :ip)
         commit define_transaction_type(credit_card_or_referenced_id), build_sale_or_authorization_request('Sale', money, credit_card_or_referenced_id, options)
-      end
+      endz
       
       def express
         @express ||= PaypalExpressGateway.new(@options)

@@ -123,7 +123,7 @@ class PayvisionTest < Test::Unit::TestCase
     assert response.test?
   end
 
-  # TODO アカウントの制限で実行できない
+  # TODO テストアカウントの制限で本処理を実行できず、テストできていない
   #def test_successful_fundtransfer
   #  #@gateway.expects(:ssl_post).returns(successful_fundtransfer_response)
   #
@@ -205,7 +205,6 @@ class PayvisionTest < Test::Unit::TestCase
             </Items>
           </CdcEntry>
         </Cdc>
-      </TransactionResult>
     RESPONSE
   end
 

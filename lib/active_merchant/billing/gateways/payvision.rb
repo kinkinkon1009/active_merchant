@@ -7,7 +7,7 @@ end
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     class PayvisionGateway < Gateway
-      self.test_url  = 'https://testprocessor.payvisionservices.com/Gateway/'
+      self.test_url = 'https://testprocessor.payvisionservices.com/Gateway/'
       # TODO Ayumu 2014.3.15 まだ未定
       self.live_url = 'https://testprocessor.payvisionservices.com/Gateway/'
 
@@ -59,7 +59,7 @@ module ActiveMerchant #:nodoc:
       #@param creditcard: ActiveMerchant::Billing::CreditCard
       #@params options: 特に利用していない
       def registercard(creditcard, options = {})
-      post = {}
+        post = {}
         add_registercard(post, creditcard)
         commit('registercard', post, 'recurring')
       end
@@ -69,31 +69,31 @@ module ActiveMerchant #:nodoc:
       #@param purchase: ハッシュ必須項目 countryId, currencyId, trackingMemberCode, merchantAccountType, dynamicDescriptor, avsAddress, avsZip
       #@param options
       def authorize(money, recurringcard, purchase, options = {})
-      post = {}
+        post = {}
         add_recurringcard(post, recurringcard)
         add_purchase(post, money, purchase)
         commit('authorize', post, 'recurring')
       end
 
       # 一括決済(authorize + capture と同様)
-      def payment(money,recurringcard,purchase, options = {})
-      post = {}
+      def payment(money, recurringcard, purchase, options = {})
+        post = {}
         add_recurringcard(post, recurringcard)
         add_purchase(post, money, purchase)
         commit('payment', post, 'recurring')
       end
 
       # 返金
-      def credit(money,recurringcard,purchase, options = {})
-      post = {}
+      def credit(money, recurringcard, purchase, options = {})
+        post = {}
         add_recurringcard(post, recurringcard)
         add_purchase(post, money, purchase)
         commit('credit', post, 'recurring')
       end
 
       # 送金
-      def fundtransfer(money,recurringcard,purchase, options = {})
-      post = {}
+      def fundtransfer(money, recurringcard, purchase, options = {})
+        post = {}
         add_recurringcard(post, recurringcard)
         add_purchase(post, money, purchase)
         commit('fundtransfer', post, 'recurring')
@@ -105,8 +105,8 @@ module ActiveMerchant #:nodoc:
       # 決済確定
       def capture(money, authorization, options = {})
         post = {}
-      add_authorization(post, money, authorization)
-      commit('capture', post, 'basic')
+        add_authorization(post, money, authorization)
+        commit('capture', post, 'basic')
       end
 
       # 与信キャンセル
@@ -117,7 +117,7 @@ module ActiveMerchant #:nodoc:
       end
 
       # 返金(capture、paymentと紐づく必要あり)
-      def refund(money,authorization, options = {})
+      def refund(money, authorization, options = {})
         post = {}
         add_authorization(post, money, authorization);
         commit('refund', post, 'basic')
@@ -130,16 +130,16 @@ module ActiveMerchant #:nodoc:
       #@param [post]
       #@param creditcard: ActiveMerchant::Billing::CreditCard
       def add_registercard(post, creditcard)
-        post[:number]      = creditcard.number
-        post[:holder]      = creditcard.name
+        post[:number] = creditcard.number
+        post[:holder] = creditcard.name
         post[:expiryMonth] = creditcard.month
-        post[:expiryYear]  = creditcard.year
-        post[:cardType]    = creditcard.brand
+        post[:expiryYear] = creditcard.year
+        post[:cardType] = creditcard.brand
       end
 
       # 登録カード情報をpostデータに登録
-      def add_recurringcard(post,recurringcard)
-        post[:cardId]   = recurringcard[:cardId]
+      def add_recurringcard(post, recurringcard)
+        post[:cardId] = recurringcard[:cardId]
         post[:cardGuid] = recurringcard[:cardGuid]
       end
 
@@ -149,14 +149,14 @@ module ActiveMerchant #:nodoc:
       #@param purchase ハッシュ必須項目 countryId, currencyId, trackingMemberCode, merchantAccountType, dynamicDescriptor, avsAddress, avsZip
       #@return post
       def add_purchase(post, money, purchase)
-        post[:amount]              = money
-        post[:countryId]           = purchase[:countryId]
-        post[:currencyId]          = purchase[:currencyId]
-        post[:trackingMemberCode]  = purchase[:trackingMemberCode] # 1:EC 2:MOTO 4:RECURRING
+        post[:amount] = money
+        post[:countryId] = purchase[:countryId]
+        post[:currencyId] = purchase[:currencyId]
+        post[:trackingMemberCode] = purchase[:trackingMemberCode] # 1:EC 2:MOTO 4:RECURRING
         post[:merchantAccountType] = purchase[:merchantAccountType]
-        post[:dynamicDescriptor]   = purchase[:dynamicDescriptor]
-        post[:avsAddress]          = purchase[:avsAddress]
-        post[:avsZip]              = purchase[:avsZip]
+        post[:dynamicDescriptor] = purchase[:dynamicDescriptor]
+        post[:avsAddress] = purchase[:avsAddress]
+        post[:avsZip] = purchase[:avsZip]
       end
 
       # 取得している与信のデータをpostデータに登録
@@ -165,17 +165,17 @@ module ActiveMerchant #:nodoc:
       #@param authorization ハッシュ必須項目 transactionId, transactionGuid, currencyId, trackingMemberCode
       #@return post
       def add_authorization(post, money, authorization = {})
-        post[:transactionId]      = authorization[:transactionId]
-        post[:transactionGuid]    = authorization[:transactionGuid]
-        post[:currencyId]         = authorization[:currencyId]
+        post[:transactionId] = authorization[:transactionId]
+        post[:transactionGuid] = authorization[:transactionGuid]
+        post[:currencyId] = authorization[:currencyId]
         post[:trackingMemberCode] = authorization[:trackingMemberCode]
-        post[:amount]             = money
+        post[:amount] = money
       end
 
-      def parse(data,action,action_type)
+      def parse(data, action, action_type)
         # 取得データ
-        puts "[ data ]-------------------------"
-        puts data.inspect
+        #puts "[ data ]-------------------------"
+        #puts data.inspect
 
         result = {}
         xml = Nokogiri::XML(data)
@@ -187,6 +187,7 @@ module ActiveMerchant #:nodoc:
         root.children.each do |node|
           parse_element(result, node) if node.element?
         end
+
         return result
       end
 
@@ -197,34 +198,33 @@ module ActiveMerchant #:nodoc:
 
         # payvisionにpostする
         # INPUT データ
-        puts " --- start -----"
-        puts "[ post ] ---------------------------"
-        puts post.inspect
+        #puts " --- start -----"
+        #puts "[ post ] ---------------------------"
+        #puts post.inspect
 
         success = false
         message = nil
         begin
-          raw_response = ssl_post( action_url(action, action_type), post_data(post))
-          response = parse( raw_response, action, action_type )
+          raw_response = ssl_post(action_url(action, action_type), post_data(post))
+          response = parse(raw_response, action, action_type)
           success = SUCCESS_TYPES.include?(response[:result])
           message = message_from(response)
         rescue SocketError => e
           # インターネットに接続されていない場合：
-          puts "------ socket error -------------"
-          response = { message: e.message }
-          puts e.message
+          #puts "------ socket error -------------"
+          response = {message: e.message}
+            #puts e.message
         rescue ResponseError => e
           # パラメータが足りない場合も発生し得る：
-          puts "------ response error -------------"
-          puts e.inspect
+          response = {message: "Server internal error. Sorry for inconvinience. Please contact us"}
+          #puts "------ response error -------------"
+          #puts e.inspect
         end
 
         # RESPONSE データ
         #puts "########## response ###########"
         #puts response.inspect
-        Response.new(success, message, response,
-                     :test => test?
-        )
+        Response.new(success, message, response,:test => test?)
       end
 
       def action_url(action, action_type)
@@ -232,8 +232,8 @@ module ActiveMerchant #:nodoc:
         host_url = test? ? self.test_url : self.live_url
         prefix_url = eval("URL_PREFIX_#{cap_action_type}")
 
-        puts "[ url ] ---------------------------"
-        puts host_url + prefix_url + eval(cap_action_type)[action]
+        #puts "[ url ] ---------------------------"
+        #puts host_url + prefix_url + eval(cap_action_type)[action]
         return host_url + prefix_url + eval(cap_action_type)[action]
       end
 
