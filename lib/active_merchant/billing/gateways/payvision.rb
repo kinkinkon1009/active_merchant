@@ -8,8 +8,7 @@ module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     class PayvisionGateway < Gateway
       self.test_url = 'https://testprocessor.payvisionservices.com/Gateway/'
-      # TODO Ayumu 2014.3.15 まだ未定
-      self.live_url = 'https://testprocessor.payvisionservices.com/Gateway/'
+      self.live_url = 'https://processor.payvisionservices.com/Gateway/'
 
       SUCCESS_TYPES = ["0"]
 
